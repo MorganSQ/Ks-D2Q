@@ -1,2 +1,2 @@
 # Res-D2Q
-the code will be upload before 15 February.
+The code will be upload before 15 February.

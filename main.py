@@ -11,7 +11,6 @@ from tensorflow.keras import layers,Model
 
 BATCH_SIZE = 256
 value_ranges = list(zip(range(0,16),[2000] * 16)) + [(16, 720)]
-#print(value_ranges)
 
 def make_parse_csv():
     def parse_csv(line):
@@ -48,14 +47,12 @@ def D2Q():
         e = layers.Embedding(input_dim=dim, output_dim=32)(x)
         inputs.append(x)
         pxtr_sparse_concat.append(e)
-    print("pxtr_sparse_concat=", tf.shape(pxtr_sparse_concat))
     
     duration_concat = []
     x = layers.Input(shape=(1,),dtype=tf.int32)
     e = layers.Embedding(input_dim=720, output_dim=32)(x)
     inputs.append(x)
     duration_concat.append(e)
-    print("duration_concat=", tf.shape(duration_concat))
     
     pxtr_dense_concat = []
     for i in range(16):

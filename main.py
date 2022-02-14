@@ -8,10 +8,11 @@ import numpy as np
 import tensorflow as tf
 import tensorflow.keras as keras
 from tensorflow.keras import layers,Model
+from metrics import xauc_score
 
 BATCH_SIZE = 256
 value_ranges = list(zip(range(0,16),[2000] * 16)) + [(16, 720)]
-
+CHECKPOINT_PATH = './model/d2q_model'
 def make_parse_csv():
     def parse_csv(line):
         fields_defaults = [int()] * 17 + [float()] * 17
@@ -34,8 +35,8 @@ def make_dataset(filelist, repeat_times=1):
     dataset = dataset.repeat(repeat_times)
     return dataset
 
-train_files = ['./train_2.csv']
-eval_files = ['./test.csv']
+train_files = ['./train_0.csv']
+eval_files = ['./train_test.csv']
 
 def D2Q():
     inputs=[]
@@ -95,8 +96,24 @@ def train():
     model = D2Q()
     model.compile(loss=mse_loss, optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1),)
     model.fit(make_dataset(train_files,1))
-    model.save_weights('./model/d2q_model')
+    model.save_weights(CHECKPOINT_PATH)
+
+def model_eval(path):
+    model = D2Q()
+    model.load_weights(path)
+    labels=[]
+    outs=[]
+    for f, l in make_dataset(eval_files):
+        labels.append(l.numpy())
+        outs.append(model.predict(f))
+    label_all = np.concatenate(labels,axis=0)
+    out_all = np.concatenate(outs,axis=0)
+    xauc = xauc_score(label_all,out_all)
+    print('xauc:'+str(xauc))
+    return xauc
  
 if __name__ == "__main__":
     if sys.argv[1] == 'train':
         train()
+    elif sys.argv[1] == 'eval':
+        model_eval(CHECKPOINT_PATH)
